@@ -20,8 +20,10 @@ jobs:
       - name: Notify Slack
         uses: act10ns/slack@v2
         with:
-          status: success
-          text: |
+          channel: "#deploy-web"
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          message: |
             👍 Merge de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
             🚀 Ejecución exitosa de la integración continua.
 
@@ -110,33 +112,3 @@ jobs:
           steps: ${{ toJson(steps) }}
           message: |
             👍 Pipeline de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
-
-      # - name: Delete Files
-      #   run: |
-      #     ssh -o StrictHostKeyChecking=no -tt ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
-      #     if [ -f "backexample.tar" ]; then
-      #       rm -rf backexample.tar
-      #     else
-      #       echo "File backexample.tar does not exist."
-      #     fi
-      #     ENDSSH
-
-      # - name: remov Container and Images
-      #   run: |
-      #     ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
-      #     if [ "$(docker ps -a -q -f name=BackAle)" ]; then
-      #       docker stop BackAle
-      #     else
-      #       echo "Container BackAle does not exist."
-      #     fi
-      #     if [ "$(docker ps -a -q -f name=BackAle)" ]; then
-      #       docker rm -f BackAle
-      #     else
-      #       echo "Container BackAle does not exist."
-      #     fi
-      #     if [ "$(docker images -q backexample:1.0)" ]; then
-      #       docker rmi -f backexample:1.0
-      #     else
-      #       echo "Image backexample:1.0 does not exist."
-      #     fi
-      #     ENDSSH
