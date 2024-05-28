@@ -44,9 +44,11 @@ jobs:
 
       - name: probamos lo commits
         run: |
-          PREVIOUS_COMMIT_SHA=$(git log --format="%H" -n 2 | tail -n 1)
+          PREVIOUS_COMMIT_SHA=$(git log --format="%H" -n 2 | tail -n 1 | cut -c 1-7)
           echo "PREVIOUS_COMMIT_SHA=$PREVIOUS_COMMIT_SHA" >> $GITHUB_ENV
-          echo "El commit anterior fue $PREVIOUS_COMMIT_SHA"
+
+      - name: previus commit SHA
+        run: echo "El penultimo commit fue $PREVIOUS_COMMIT_SHA"
 
       - name: Deploy Docker containers using Docker Compose on remote server
         run: |
