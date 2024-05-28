@@ -85,12 +85,15 @@ jobs:
           docker compose -f ${{ secrets.REMOTE_SERVER_PATH }}/docker-compose.yaml up -d
           ENDSSH
 
-      - uses: act10ns/slack@v2
+      - name: Notifica cuando se haya lenatado la Web
+        uses: act10ns/slack@v2
+        if: always()
         with:
           channel: "#deploy-web"
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-        if: always()
+          text: |
+            👍 Pipeline de GitHub Actions completado en ${{ github.repository }} (${{ github.ref }}) por ${{ github.actor }}.
 
       # - name: Delete Files
       #   run: |
