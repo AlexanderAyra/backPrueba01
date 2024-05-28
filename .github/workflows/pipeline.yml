@@ -13,10 +13,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t ejemplo01:1.0 .
+        run: docker build -t ejemplo01:$(echo $GITHUB_SHA | head -c7) .
 
       - name: Save Docker image as tar file
-        run: docker save -o ejemplo01.tar ejemplo01:1.0
+        run: docker save -o ejemplo01.tar ejemplo01:$(echo $GITHUB_SHA | head -c7)
+
+      - name: Create .env file with GitHub SHA
+        run: echo "COMMIT_SHA=$(echo $GITHUB_SHA | head -c7)" > .env
 
       - name: Transfer Docker image to remote server
         run: |
