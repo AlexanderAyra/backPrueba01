@@ -25,15 +25,16 @@ jobs:
           username: ${{ secrets.REMOTE_SERVER_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+            cd ~/Imagenes
             if [ -f "backexample.tar" ]; then
-            rm -rf backexample.tar
+              rm -rf backexample.tar
             else
             echo "File backexample.tar does not exist."
             fi
             if [ -f "docker-compose.yaml" ]; then
-            rm -rf docker-compose.yaml
+              rm -rf docker-compose.yaml
             else
-            echo "File backexample.tar does not exist."
+              echo "File backexample.tar does not exist."
             fi
 
       - name: DELETE CONTAINER AND IMAGES
