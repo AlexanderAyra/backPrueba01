@@ -18,15 +18,15 @@ jobs:
       - name: Save Docker image as tar file
         run: docker save -o backexample.tar backexample:1.0
 
-      # - name: multiple command
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-      #     username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-      #     key: ${{ secrets.PRIVATE_KEY }}
-      #     port: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-      #     script: |
-      #       rm -r backexample.tar docker-compose.yaml .env
+      - name: multiple command
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
+          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_SERVER_ADDRESS }}
+          script: |
+            rm -r backexample.tar docker-compose.yaml
 
       # - name: Delete Files
       #   run: |
