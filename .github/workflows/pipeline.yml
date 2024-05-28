@@ -44,8 +44,10 @@ jobs:
 
       - name: probamos lo commits
         run: |
-          PREVIOUS_COMMIT_SHA=$(git log --format="%H" -n 2 | tail -n 1 | head -c7)
+          PREVIOUS_COMMIT_SHA2=$(git log --format="%H" -n 2 | tail -n 1 | head -c7)
+          PREVIOUS_COMMIT_SHA=$(git log --format="%H" -n 2 | tail -n 1 | cut -c 1-7)
           echo "PREVIOUS_COMMIT_SHA=$PREVIOUS_COMMIT_SHA" >> $GITHUB_ENV
+          echo "El commit anterior 2 fue $PREVIOUS_COMMIT_SHA2"
           echo "El commit anterior fue $PREVIOUS_COMMIT_SHA"
           echo "El commit actual fue $GITHUB_SHA"
 
