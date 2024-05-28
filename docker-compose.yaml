@@ -2,8 +2,6 @@ version: "3.9"
 services:
   app:
     container_name: BackAle
-    image: backexample:${COMMIT_SHA}
-    environment:
-      - SOME_ENV_VAR=${COMMIT_SHA}
+    image: backexample:1.0
     ports:
       - 3000:3000
