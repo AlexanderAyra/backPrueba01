@@ -5,3 +5,9 @@ services:
     image: backexample:1.0
     ports:
       - 3000:3000
+    networks:
+      - red_ayra
+      
+networks:
+  red_ayra:
+    external: true
