@@ -4,6 +4,9 @@ const getUsers = (req = request, res = response) => {
   res.send('Hola Mundo');
 };
 
+const postUsers = (req = request, res = response) => {
+  res.send('hiciste un post');
+};
 module.exports = {
   getUsers,
 };
