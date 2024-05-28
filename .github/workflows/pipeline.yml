@@ -18,18 +18,46 @@ jobs:
       - name: Save Docker image as tar file
         run: docker save -o backexample.tar backexample:1.0
 
-      # - name: multiple command
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-      #     username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-      #     key: ${{ secrets.PRIVATE_KEY }}
-      #     script: |
-      #       if [ -f "backexample.tar" ]; then
-      #       rm -rf backexample.tar
-      #       else
-      #       echo "File backexample.tar does not exist."
-      #       fi
+      - name: DELETE FILES
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
+          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            if [ -f "backexample.tar" ]; then
+            rm -rf backexample.tar
+            else
+            echo "File backexample.tar does not exist."
+            fi
+            if [ -f "docker-compose.yaml" ]; then
+            rm -rf docker-compose.yaml
+            else
+            echo "File backexample.tar does not exist."
+            fi
+
+      - name: DELETE CONTAINER AND IMAGES
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
+          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
+              docker stop BackAle 
+            else
+              echo "Container BackAle does not exist."
+            fi
+            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
+              docker rm -f BackAle
+            else
+              echo "Container BackAle does not exist."
+            fi
+            if [ "$(docker images -q backexample:1.0)" ]; then
+              docker rmi -f backexample:1.0
+            else
+              echo "Image backexample:1.0 does not exist."
+            fi
 
       # - name: Delete Files
       #   run: |
