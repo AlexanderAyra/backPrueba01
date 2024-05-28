@@ -83,6 +83,13 @@ jobs:
           docker compose -f ${{ secrets.REMOTE_SERVER_PATH }}/docker-compose.yaml up -d
           ENDSSH
 
+      - uses: act10ns/slack@v2
+        with:
+          channel: "#deploy-web"
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: always()
+
       # - name: Delete Files
       #   run: |
       #     ssh -o StrictHostKeyChecking=no -tt ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
