@@ -92,7 +92,7 @@ jobs:
           channel: "#deploy-web"
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-          text: |
+          message: |
             👍 Pipeline de GitHub Actions completado en ${{ github.repository }} (${{ github.ref }}) por ${{ github.actor }}.
 
       # - name: Delete Files
