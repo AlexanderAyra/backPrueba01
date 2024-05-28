@@ -7,6 +7,10 @@ const getUsers = (req = request, res = response) => {
 const postUsers = (req = request, res = response) => {
   res.send('hiciste un post');
 };
+
+const putUsers = (req = request, res = response) => {
+  res.send('hiciste un post');
+};
 module.exports = {
   getUsers,
 };
