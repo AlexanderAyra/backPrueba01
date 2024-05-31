@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   app:
-    container_name: BackAle
+    container_name: ${NAME_CONTAINER}
     image: backexample:1.0
     ports:
       - 3000:3000
