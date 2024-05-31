@@ -1,38 +1,35 @@
 name: Deploy Alexander
 
 on:
-  push:
-    branches:
-      - master
-  # pull_request:
-  #   types: [closed]
+  pull_request:
+    types: [closed]
 
 jobs:
   build:
     runs-on: ubuntu-20.04
 
-    # if: github.event.pull_request.merged == true && github.event.pull_request.merged_by != null
+    if: github.event.pull_request.merged == true && github.event.pull_request.merged_by != null
 
-    # env:
-    #   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
       - name: Checkout Files
         uses: actions/checkout@v4
 
-      # - name: Notify Slack
-      #   uses: act10ns/slack@v2
-      #   with:
-      #     channel: "#deploy-web"
-      #     status: ${{ job.status }}
-      #     steps: ${{ toJson(steps) }}
-      #     message: |
-      #       👍 Merge de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
+      - name: Notify Slack
+        uses: act10ns/slack@v2
+        with:
+          channel: "#deploy-web"
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          message: |
+            👍 Merge BackEnd de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
 
-      #       Detalles: ${{ github.event.pull_request.html_url }}
-      #     mentions: "#deploy-web"
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+            Detalles: ${{ github.event.pull_request.html_url }}
+          mentions: "#deploy-web"
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Build Docker image
         run: docker build -t ${{ secrets.APPBACK }}:1.0 .
@@ -113,13 +110,13 @@ jobs:
           docker compose -f ${{ secrets.REMOTE_SERVER_PATH }}/docker-compose.yaml up -d
           ENDSSH
 
-      # - name: Notifica cuando se haya lenatado la Web
-      #   uses: act10ns/slack@v2
-      #   if: always()
-      #   with:
-      #     channel: "#deploy-web"
-      #     status: ${{ job.status }}
-      #     steps: ${{ toJson(steps) }}
-      #     message: |
-      #       👍 Pipeline de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
-      #       🚀 Ejecución exitosa de la integración continua.
+      - name: Notifica cuando se haya lenatado la Web
+        uses: act10ns/slack@v2
+        if: always()
+        with:
+          channel: "#deploy-web"
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          message: |
+            👍 Pipeline BackEnd de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
+            🚀 Ejecución exitosa de la integración continua.
