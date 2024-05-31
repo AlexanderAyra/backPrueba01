@@ -77,26 +77,26 @@ jobs:
       - name: Create .env file
         run: |
           echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" > .env
-          # echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" > .env
-          # echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> .env
-          # echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
-          # echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
-          # echo "SMTP_SECURE=${{ secrets.SMTP_SECURE }}" >> .env
-          # echo "SMTP_EMAIL=${{ secrets.SMTP_EMAIL }}" >> .env
-          # echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
-          # echo "SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}" >> .env
-          # echo "SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}" >> .env
-          # echo "MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}" >> .env
-          # echo "MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }}" >> .env
-          # echo "MAILGUN_FROM_EMAIL=${{ secrets.MAILGUN_FROM_EMAIL }}" >> .env
-          # echo "MAILGUN_FROM_NAME=${{ secrets.MAILGUN_FROM_NAME }}" >> .env
-          # echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          # echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          # echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          # echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          # echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-          # echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          # echo "DB_SSL=${{ secrets.DB_SSL }}" >> .env
+          echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
+          echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> .env
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+          echo "SMTP_SECURE=${{ secrets.SMTP_SECURE }}" >> .env
+          echo "SMTP_EMAIL=${{ secrets.SMTP_EMAIL }}" >> .env
+          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
+          echo "SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}" >> .env
+          echo "SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}" >> .env
+          echo "MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}" >> .env
+          echo "MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }}" >> .env
+          echo "MAILGUN_FROM_EMAIL=${{ secrets.MAILGUN_FROM_EMAIL }}" >> .env
+          echo "MAILGUN_FROM_NAME=${{ secrets.MAILGUN_FROM_NAME }}" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_SSL=${{ secrets.DB_SSL }}" >> .env
 
       - name: Transfer Docker image to remote server
         run: |
