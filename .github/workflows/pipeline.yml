@@ -24,16 +24,57 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
           message: |
-            👍 Merge de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
+            👍 Merge BackEnd de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
 
             Detalles: ${{ github.event.pull_request.html_url }}
           mentions: "#deploy-web"
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.APPBACK }}:1.0 .
+
+      - name: Save Docker image as tar file
+        run: docker save -o ${{ secrets.APPBACK }}.tar ${{ secrets.APPBACK }}:1.0
+
+      - name: DELETE FILES
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
+          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd ~/${{secrets.FILE}}
+            if [ -f "${{ secrets.APPBACK }}.tar" ]; then
+              rm -f ${{ secrets.APPBACK }}.tar
+            else
+            echo "File ${{ secrets.APPBACK }}.tar does not exist."
+            fi
+            if [ -f ".env" ]; then
+              rm -f .env
+            else
+            echo "File .env does not exist."
+            fi
+            if [ -f "docker-compose.yaml" ]; then
+              rm -f docker-compose.yaml
+            else
+              echo "File docker-compose.yaml does not exist."
+            fi
+            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
+              docker rm -f BackAle
+            else
+              echo "Container BackAle does not exist."
+            fi
+            if [ "$(docker images -q ${{ secrets.APPBACK }}:1.0)" ]; then
+              docker rmi -f ${{ secrets.APPBACK }}:1.0
+            else
+              echo "Image ${{ secrets.APPBACK }}:1.0 does not exist."
+            fi
+
       - name: Create .env file
         run: |
-          echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" > .env
+          echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" > .env
+          echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
           echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> .env
           echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
           echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
@@ -54,72 +95,17 @@ jobs:
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
           echo "DB_SSL=${{ secrets.DB_SSL }}" >> .env
 
-      - name: Send .env file to server
-        run: |
-          scp -o StrictHostKeyChecking=no .env ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-
-      - name: Build Docker image
-        run: docker build -t backexample:1.0 .
-
-      - name: Save Docker image as tar file
-        run: docker save -o backexample.tar backexample:1.0
-
-      - name: DELETE FILES
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            cd ~/${{secrets.FILE}}
-            if [ -f "backexample.tar" ]; then
-              rm -f backexample.tar
-            else
-            echo "File backexample.tar does not exist."
-            fi
-            if [ -f "docker-compose.yaml" ]; then
-              rm -f docker-compose.yaml
-            else
-              echo "File docker-compose.yaml does not exist."
-            fi
-
-      - name: DELETE CONTAINER AND IMAGES
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
-              docker rm -f BackAle
-            else
-              echo "Container BackAle does not exist."
-            fi
-            if [ "$(docker images -q backexample:1.0)" ]; then
-              docker rmi -f backexample:1.0
-            else
-              echo "Image backexample:1.0 does not exist."
-            fi
-
       - name: Transfer Docker image to remote server
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          scp -o StrictHostKeyChecking=no backexample.tar ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-
-      - name: Load Docker image on remote server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
-          docker load -i ${{ secrets.REMOTE_SERVER_PATH }}/backexample.tar
-          ENDSSH
-
-      - name: Transfer Docker Compose file to remote server
-        run: |
+          scp -o StrictHostKeyChecking=no ${{ secrets.APPBACK }}.tar ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
+          scp -o StrictHostKeyChecking=no .env ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
           scp -o StrictHostKeyChecking=no docker-compose.yaml ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-
-      - name: Deploy Docker containers using Docker Compose on remote server
-        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
+          docker load -i ${{ secrets.REMOTE_SERVER_PATH }}/${{ secrets.APPBACK }}.tar
+          ENDSSH
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
           docker compose -f ${{ secrets.REMOTE_SERVER_PATH }}/docker-compose.yaml up -d
           ENDSSH
@@ -132,5 +118,5 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
           message: |
-            👍 Pipeline de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
+            👍 Pipeline BackEnd de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
             🚀 Ejecución exitosa de la integración continua.
