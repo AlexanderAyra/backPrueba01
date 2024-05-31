@@ -60,10 +60,10 @@ jobs:
             else
               echo "File docker-compose.yaml does not exist."
             fi
-            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
-              docker rm -f BackAle
+            if [ "$(docker ps -a -q -f name=${{ secrets.NAME_CONTAINER }})" ]; then 
+              docker rm -f ${{ secrets.NAME_CONTAINER }}
             else
-              echo "Container BackAle does not exist."
+              echo "Container ${{ secrets.NAME_CONTAINER }} does not exist."
             fi
             if [ "$(docker images -q ${{ secrets.APPBACK }}:1.0)" ]; then
               docker rmi -f ${{ secrets.APPBACK }}:1.0
