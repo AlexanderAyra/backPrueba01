@@ -1,35 +1,78 @@
 name: Deploy Alexander
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - master
+  # pull_request:
+  #   types: [closed]
 
 jobs:
   build:
     runs-on: ubuntu-20.04
 
-    if: github.event.pull_request.merged == true && github.event.pull_request.merged_by != null
+    # if: github.event.pull_request.merged == true && github.event.pull_request.merged_by != null
 
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    # env:
+    #   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
-      - name: Checkout Files
-        uses: actions/checkout@v4
+      # - name: Checkout Files
+      #   uses: actions/checkout@v4
 
-      - name: Notify Slack
-        uses: act10ns/slack@v2
+      # - name: Notify Slack
+      #   uses: act10ns/slack@v2
+      #   with:
+      #     channel: "#deploy-web"
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     message: |
+      #       👍 Merge de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
+
+      #       Detalles: ${{ github.event.pull_request.html_url }}
+      #     mentions: "#deploy-web"
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.APPBACK }}:1.0 .
+
+      - name: Save Docker image as tar file
+        run: docker save -o ${{ secrets.APPBACK }}.tar ${{ secrets.APPBACK }}:1.0
+
+      - name: DELETE FILES
+        uses: appleboy/ssh-action@master
         with:
-          channel: "#deploy-web"
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-          message: |
-            👍 Merge de PR aprobado en ${{ github.repository }} (${{ github.event.pull_request.base.ref }}) por ${{ github.event.pull_request.merged_by.login }}.
-
-            Detalles: ${{ github.event.pull_request.html_url }}
-          mentions: "#deploy-web"
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
+          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd ~/${{secrets.FILE}}
+            if [ -f "${{ secrets.APPBACK }}.tar" ]; then
+              rm -f ${{ secrets.APPBACK }}.tar
+            else
+            echo "File ${{ secrets.APPBACK }}.tar does not exist."
+            fi
+            if [ -f ".env" ]; then
+              rm -f .env
+            else
+            echo "File .env does not exist."
+            fi
+            if [ -f "docker-compose.yaml" ]; then
+              rm -f docker-compose.yaml
+            else
+              echo "File docker-compose.yaml does not exist."
+            fi
+            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
+              docker rm -f BackAle
+            else
+              echo "Container BackAle does not exist."
+            fi
+            if [ "$(docker images -q ${{ secrets.APPBACK }}:1.0)" ]; then
+              docker rmi -f ${{ secrets.APPBACK }}:1.0
+            else
+              echo "Image ${{ secrets.APPBACK }}:1.0 does not exist."
+            fi
 
       - name: Create .env file
         run: |
@@ -42,95 +85,40 @@ jobs:
           echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
           echo "SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}" >> .env
           echo "SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}" >> .env
-          echo "MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}" >> .env
-          echo "MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }}" >> .env
-          echo "MAILGUN_FROM_EMAIL=${{ secrets.MAILGUN_FROM_EMAIL }}" >> .env
-          echo "MAILGUN_FROM_NAME=${{ secrets.MAILGUN_FROM_NAME }}" >> .env
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_SSL=${{ secrets.DB_SSL }}" >> .env
-
-      - name: Send .env file to server
-        run: |
-          scp -o StrictHostKeyChecking=no .env ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-
-      - name: Build Docker image
-        run: docker build -t backexample:1.0 .
-
-      - name: Save Docker image as tar file
-        run: docker save -o backexample.tar backexample:1.0
-
-      - name: DELETE FILES
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            cd ~/${{secrets.FILE}}
-            if [ -f "backexample.tar" ]; then
-              rm -f backexample.tar
-            else
-            echo "File backexample.tar does not exist."
-            fi
-            if [ -f "docker-compose.yaml" ]; then
-              rm -f docker-compose.yaml
-            else
-              echo "File docker-compose.yaml does not exist."
-            fi
-
-      - name: DELETE CONTAINER AND IMAGES
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.REMOTE_SERVER_ADDRESS }}
-          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            if [ "$(docker ps -a -q -f name=BackAle)" ]; then 
-              docker rm -f BackAle
-            else
-              echo "Container BackAle does not exist."
-            fi
-            if [ "$(docker images -q backexample:1.0)" ]; then
-              docker rmi -f backexample:1.0
-            else
-              echo "Image backexample:1.0 does not exist."
-            fi
+          echo "MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}" >> .env.example
+          echo "MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }}" >> .env.example
+          echo "MAILGUN_FROM_EMAIL=${{ secrets.MAILGUN_FROM_EMAIL }}" >> .env.example
+          echo "MAILGUN_FROM_NAME=${{ secrets.MAILGUN_FROM_NAME }}" >> .env.example
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.example
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.example
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env.example
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.example
+          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env.example
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.example
+          echo "DB_SSL=${{ secrets.DB_SSL }}" >> .env.example
 
       - name: Transfer Docker image to remote server
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          scp -o StrictHostKeyChecking=no backexample.tar ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-
-      - name: Load Docker image on remote server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
-          docker load -i ${{ secrets.REMOTE_SERVER_PATH }}/backexample.tar
-          ENDSSH
-
-      - name: Transfer Docker Compose file to remote server
-        run: |
+          scp -o StrictHostKeyChecking=no ${{ secrets.APPBACK }}.tar ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
+          scp -o StrictHostKeyChecking=no .env.example ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
           scp -o StrictHostKeyChecking=no docker-compose.yaml ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-
-      - name: Deploy Docker containers using Docker Compose on remote server
-        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
+          docker load -i ${{ secrets.REMOTE_SERVER_PATH }}/${{ secrets.APPBACK }}.tar
+          ENDSSH
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
           docker compose -f ${{ secrets.REMOTE_SERVER_PATH }}/docker-compose.yaml up -d
           ENDSSH
 
-      - name: Notifica cuando se haya lenatado la Web
-        uses: act10ns/slack@v2
-        if: always()
-        with:
-          channel: "#deploy-web"
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-          message: |
-            👍 Pipeline de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
-            🚀 Ejecución exitosa de la integración continua.
+      # - name: Notifica cuando se haya lenatado la Web
+      #   uses: act10ns/slack@v2
+      #   if: always()
+      #   with:
+      #     channel: "#deploy-web"
+      #     status: ${{ job.status }}
+      #     steps: ${{ toJson(steps) }}
+      #     message: |
+      #       👍 Pipeline de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
+      #       🚀 Ejecución exitosa de la integración continua.
