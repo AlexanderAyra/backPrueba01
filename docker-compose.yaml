@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: BackAle
+    container_name: ${NAME_CONTAINER}
     image: ${DOCKER_IMAGE_NAME}:1.0
     restart: always
     ports:
