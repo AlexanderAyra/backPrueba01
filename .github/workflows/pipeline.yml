@@ -17,8 +17,8 @@ jobs:
     #   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
-      # - name: Checkout Files
-      #   uses: actions/checkout@v4
+      - name: Checkout Files
+        uses: actions/checkout@v4
 
       # - name: Notify Slack
       #   uses: act10ns/slack@v2
