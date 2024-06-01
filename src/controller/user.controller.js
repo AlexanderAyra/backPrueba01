@@ -3,6 +3,8 @@ const { request, response } = require("express");
 const getUsers = (req = request, res = response) => {
   res.send('Hola Mundo');
   res.send('Hola Mundo');
+  res.send('Hola Mundo');
+  res.send('Hola Mundo');
 };
 
 const postUsers = (req = request, res = response) => {
