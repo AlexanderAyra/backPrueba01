@@ -73,11 +73,9 @@ jobs:
               echo "Image ${{ secrets.APPBACK }}:1.0 does not exist."
             fi
 
-      - name: Create docker-compose file
+      - name: Create .env file
         run: |
-          echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" > .env
-          echo "NAME_CONTAINER=${{ secrets.NAME_CONTAINER }}" >> .env
-          echo "${{ secrets.ENV_GLOBAL }}" >> .env
+          echo "${{ secrets.ENV_GLOBAL }}" > .env
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yaml
 
       - name: Transfer Docker image to remote server
