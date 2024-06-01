@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.REMOTE_SERVER_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd ~/${{secrets.FILE}}
+            cd ~/${{secrets.REMOTE_SERVER_PATH}}
             if [ -f "${{ secrets.APPBACK }}.tar" ]; then
               rm -f ${{ secrets.APPBACK }}.tar
             else
@@ -75,6 +75,9 @@ jobs:
 
       - name: Create docker-compose file
         run: |
+          echo "${{ secrets.ENV_GLOBAL }}" > .env
+          echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" >> .env
+          echo "NAME_CONTAINER=${{ secrets.NAME_CONTAINER }}" >> .env
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yml
 
       - name: Transfer Docker image to remote server
@@ -83,7 +86,7 @@ jobs:
           echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           scp -o StrictHostKeyChecking=no ${{ secrets.APPBACK }}.tar ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
-          # scp -o StrictHostKeyChecking=no .env ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
+          scp -o StrictHostKeyChecking=no .env ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
           scp -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }}:${{ secrets.REMOTE_SERVER_PATH }}
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_SERVER_USERNAME }}@${{ secrets.REMOTE_SERVER_ADDRESS }} << 'ENDSSH'
           docker load -i ${{ secrets.REMOTE_SERVER_PATH }}/${{ secrets.APPBACK }}.tar
