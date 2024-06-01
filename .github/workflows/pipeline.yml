@@ -52,7 +52,7 @@ jobs:
               echo "Image $(basename ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):1.0 does not exist."
             fi
 
-      - name: Create .env file
+      - name: Create docker-compose file
         run: |
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yaml
 
