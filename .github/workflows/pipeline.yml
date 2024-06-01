@@ -52,7 +52,7 @@ jobs:
               echo "Image $(basename ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):1.0 does not exist."
             fi
 
-      - name: Create .env file
+      - name: Create docker-compose file
         run: |
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yaml
 
@@ -76,11 +76,10 @@ jobs:
           channel: "#deploy-web"
           status: success
           msg_color: "#FF0000"
-          title: "Build Failed"
+          title: "Build success"
           steps: ${{ toJson(steps) }}
           message: |
-            👍 Pipeline FrontEnd de GitHub Actions completado en ${{ github.repository }} por ${{ github.actor }}.
-            🚀 Ejecución exitosa de la integración continua.
+            "¡Excelente trabajo equipo! 🎉 La acción de GitHub se completó con éxito en ${{ github.repository }}. Todos los procesos se ejecutaron sin problemas y estamos listos para seguir adelante."
 
       - name: Notify Slack
         if: failure()
@@ -92,5 +91,4 @@ jobs:
           title: "Build Failed"
           steps: ${{ toJson(steps) }}
           message: |
-            👍 Pipeline FrontEnd a fallado al ejecutarse en ${{ github.repository }} por ${{ github.actor }}.
-            🚀 Fallo en la Ejecución de la integración continua.
+            "¡Uy! Parece que la acción de GitHub en [Nombre del repositorio] encontró un problema. Por favor, revisa el registro de GitHub Actions para obtener más detalles y solucionar el problema."
