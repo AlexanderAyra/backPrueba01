@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.REMOTE_SERVER_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd ~/${{secrets.FILE}}
+            cd ~/${{secrets.REMOTE_SERVER_PATH}}
             if [ -f "${{ secrets.APPBACK }}.tar" ]; then
               rm -f ${{ secrets.APPBACK }}.tar
             else
@@ -76,6 +76,8 @@ jobs:
       - name: Create docker-compose file
         run: |
           echo "${{ secrets.ENV_GLOBAL }}" > .env
+          echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" >> .env
+          echo "NAME_CONTAINER=${{ secrets.NAME_CONTAINER }}" >> .env
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yml
 
       - name: Transfer Docker image to remote server
