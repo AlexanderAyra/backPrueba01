@@ -75,9 +75,9 @@ jobs:
 
       - name: Create docker-compose file
         run: |
-          echo "${{ secrets.ENV_GLOBAL }}" > .env
-          echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" >> .env
+          echo "DOCKER_IMAGE_NAME=${{ secrets.APPBACK }}" > .env
           echo "NAME_CONTAINER=${{ secrets.NAME_CONTAINER }}" >> .env
+          echo "${{ secrets.ENV_GLOBAL }}" >> .env
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yaml
 
       - name: Transfer Docker image to remote server
